@@ -17,6 +17,12 @@ inputs:
 runs:
   using: composite
   steps:
+    # CHECK EXISTING DOCKER IMAGES
+    - name: Capture existing docker images
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: docker images --format="{{.Repository}}:{{.Tag}}" > existing-docker-containers.txt
+
     # SETUP ENV VARIABLE
     - name: Use dockerhub instead of AWS ECR
       if: inputs.use-dockerhub == 'true'
