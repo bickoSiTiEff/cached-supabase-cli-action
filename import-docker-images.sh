@@ -7,8 +7,7 @@ cd supabase-cache
 for FILENAME in *.tar.gz; do
   IMAGE=$(basename "$FILENAME" .tar.gz | base64 -d)
   echo "Importing image from $FILENAME as $IMAGE..."
-  ID=$(pigz -d "$FILENAME" | docker load)
-  echo "Imported as $ID. Tagging..."
-  docker tag "$ID" "$IMAGE"
-  echo "Successfully imported $IMAGE!"
+  docker load -i "$FILENAME"
 done
+
+echo "Finished importing!"
