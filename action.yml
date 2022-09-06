@@ -1,0 +1,69 @@
+name: Cached Supabase CLI
+description: Installs the Supabase CLI and configures caching for the required docker images
+
+inputs:
+  version:
+    description: Release of Supabase CLI to install
+    required: true
+  architecture:
+    description: Architecture of the binary to download
+    required: false
+    default: amd64
+  use-dockerhub:
+    description: Use dockerhub for images instead of the default AWS ECR to avoid ratelimiting
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    # SETUP ENV VARIABLE
+    - name: Use dockerhub instead of AWS ECR
+      if: inputs.use-dockerhub == 'true'
+      shell: bash
+      run: echo "SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io" >> $GITHUB_ENV
+
+    # SETUP SUPABASE BINARY
+    - name: Cache Supabase CLI binary
+      id: supabase-binary-cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.temp }}/supabase-cli
+        key: supabase-binary-${{ inputs.architecture }}-${{ inputs.version }}
+    - name: Download Supabase CLI
+      if: steps.supabase-binary-cache.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      env:
+        VERSION: ${{ inputs.version }}
+        ARCH: ${{ inputs.architecture }}
+      run: |
+        mkdir supabase-cli
+        curl -L -o supabase-cli.tar.gz https://github.com/supabase/cli/releases/download/v${VERSION}/supabase_${VERSION}_linux_${ARCH}.tar.gz
+        tar -xzf supabase-cli.tar.gz -C supabase-cli
+        rm supabase-cli.tar.gz
+    - name: Install Supabase CLI
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: |
+        echo "${PWD}/supabase-cli" >> $GITHUB_PATH
+        echo "Installed Supabase-CLI version:"
+        ./supabase-cli/supabase --version
+
+    # DOCKER IMAGE CACHING
+    - name: Restore docker image cache
+      id: supabase-docker-cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.temp }}/supabase-cache
+        key: supabase-images-${{ inputs.architecture }}-${{ inputs.version }}
+    - name: Import docker image cache
+      if: steps.supabase-docker-cache.outputs.cache-hit == 'true'
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: ${{ github.action_path }}/import-docker-images.sh
+    - name: Export docker images for cache
+      uses: webiny/action-post-run@2.0.1
+      with:
+        working-directory: ${{ runner.temp }}
+        run: ${{ github.action_path }}/export-docker-images.sh
