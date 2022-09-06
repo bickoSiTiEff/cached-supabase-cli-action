@@ -17,6 +17,11 @@ on:
         description: Whether to use dockerhub instead of AWS ECR
         default: true
         required: false
+      enable-cache:
+        type: boolean
+        description: Whether to use actions/cache
+        default: true
+        required: false
 
 jobs:
   test:
@@ -29,6 +34,7 @@ jobs:
           version: ${{ inputs.version }}
           architecture: ${{ inputs.architecture }}
           use-dockerhub: ${{ inputs.use-dockerhub }}
+          enable-cache: ${{ inputs.enable-cache }}
       - name: Initialize new project
         run: supabase init
       - name: Start project

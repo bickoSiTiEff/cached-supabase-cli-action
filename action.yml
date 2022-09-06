@@ -13,12 +13,17 @@ inputs:
     description: Use dockerhub for images instead of the default AWS ECR to avoid ratelimiting
     required: false
     default: "true"
+  enable-cache:
+    description: Whether to use actions/cache
+    required: false
+    default: "true"
 
 runs:
   using: composite
   steps:
     # CHECK EXISTING DOCKER IMAGES
     - name: Capture existing docker images
+      if: inputs.enable-cache == 'true'
       shell: bash
       working-directory: ${{ runner.temp }}
       run: docker images --format="{{.Repository}}:{{.Tag}}" > existing-docker-containers.txt
@@ -32,12 +37,13 @@ runs:
     # SETUP SUPABASE BINARY
     - name: Cache Supabase CLI binary
       id: supabase-binary-cache
+      if: inputs.enable-cache == 'true'
       uses: actions/cache@v3
       with:
         path: ${{ runner.temp }}/supabase-cli
         key: supabase-binary-${{ inputs.architecture }}-${{ inputs.version }}
     - name: Download Supabase CLI
-      if: steps.supabase-binary-cache.outputs.cache-hit != 'true'
+      if: inputs.enable-cache != 'true' || steps.supabase-binary-cache.outputs.cache-hit != 'true'
       shell: bash
       working-directory: ${{ runner.temp }}
       env:
@@ -58,17 +64,19 @@ runs:
 
     # DOCKER IMAGE CACHING
     - name: Restore docker image cache
+      if: inputs.enable-cache == 'true'
       id: supabase-docker-cache
       uses: actions/cache@v3
       with:
         path: ${{ runner.temp }}/supabase-cache
         key: supabase-images-${{ inputs.architecture }}-${{ inputs.version }}
     - name: Import docker image cache
-      if: steps.supabase-docker-cache.outputs.cache-hit == 'true'
+      if: inputs.enable-cache == 'true' && steps.supabase-docker-cache.outputs.cache-hit == 'true'
       shell: bash
       working-directory: ${{ runner.temp }}
       run: ${{ github.action_path }}/import-docker-images.sh
     - name: Export docker images for cache
+      if: inputs.enable-cache == 'true'
       uses: webiny/action-post-run@2.0.1
       with:
         working-directory: ${{ runner.temp }}
