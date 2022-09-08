@@ -26,6 +26,5 @@ for IMAGE in $IMAGES; do
   docker tag "$IMAGE" "localhost:46318/$IMAGE" || echo "ERROR while tagging localhost:46318/$IMAGE" # ignore errors
   docker push "localhost:46318/$IMAGE" || echo "ERROR while pushing localhost:46318/$IMAGE" # ignore errors
   touch "$TARGET_FILE_NAME"
-  echo "Exported $IMAGE"
-
+  echo "Exported $IMAGE and marked as $TARGET_FILE_NAME"
 done
