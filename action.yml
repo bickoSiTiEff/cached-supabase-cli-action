@@ -70,6 +70,11 @@ runs:
       with:
         path: ${{ runner.temp }}/docker-images-cache
         key: docker-images-${{ inputs.architecture }}-${{ inputs.version }}
+    - name: Create cache directory
+      if: inputs.enable-cache == 'true' && steps.docker-images-cache.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: mkdir docker-images-cache
     - name: Start docker registry
       if: inputs.enable-cache == 'true'
       shell: bash
