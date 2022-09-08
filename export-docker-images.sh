@@ -15,7 +15,7 @@ for IMAGE in $IMAGES; do
     continue
   fi
 
-  TARGET_FILE_NAME="$(echo "$IMAGE" | base64).tar.gz"
+  TARGET_FILE_NAME="$(echo "$IMAGE" | base64).txt"
 
   if [ -f "$TARGET_FILE_NAME" ]; then
     echo "Skipping image $IMAGE because it is already exported..."
@@ -23,7 +23,9 @@ for IMAGE in $IMAGES; do
   fi
 
   echo "Exporting image $IMAGE..."
-  docker save "$IMAGE" | pigz >"$TARGET_FILE_NAME"
-  echo "Exported to $TARGET_FILE_NAME"
+  docker tag "$IMAGE" "localhost:46318/$IMAGE" || echo "ERROR while tagging localhost:46318/$IMAGE" # ignore errors
+  docker push "localhost:46318/$IMAGE" || echo "ERROR while pushing localhost:46318/$IMAGE" # ignore errors
+  touch "$TARGET_FILE_NAME"
+  echo "Exported $IMAGE"
 
 done

@@ -65,18 +65,28 @@ runs:
     # DOCKER IMAGE CACHING
     - name: Restore docker image cache
       if: inputs.enable-cache == 'true'
-      id: supabase-docker-cache
+      id: docker-images-cache
       uses: actions/cache@v3
       with:
-        path: ${{ runner.temp }}/supabase-cache
-        key: supabase-images-${{ inputs.architecture }}-${{ inputs.version }}
+        path: ${{ runner.temp }}/docker-images-cache
+        key: docker-images-${{ inputs.architecture }}-${{ inputs.version }}
+    - name: Start docker registry
+      if: inputs.enable-cache == 'true'
+      shell: bash
+      working-directory: ${{ runner.temp }}/docker-images-cache
+      env:
+        PORT: ${{ inputs.registry-port }}
+      run: |
+        mkdir registry
+        docker run -d -p 46318:5000 --restart=always --name registry -v ./registry:/var/lib/registry registry:2
+        npx wait-on tcp:46318
     - name: Import docker image cache
-      if: inputs.enable-cache == 'true' && steps.supabase-docker-cache.outputs.cache-hit == 'true'
+      if: inputs.enable-cache == 'true' && steps.docker-images-cache.outputs.cache-hit == 'true'
       shell: bash
       working-directory: ${{ runner.temp }}
       run: ${{ github.action_path }}/import-docker-images.sh
     - name: Export docker images for cache
-      if: inputs.enable-cache == 'true'
+      if: inputs.enable-cache == 'true' && steps.docker-images-cache.outputs.cache-hit != 'true'
       uses: webiny/action-post-run@2.0.1
       with:
         working-directory: ${{ runner.temp }}

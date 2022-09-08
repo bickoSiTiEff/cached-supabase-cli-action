@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-mkdir -p supabase-cache
-cd supabase-cache
+mkdir -p docker-images-cache
+cd docker-images-cache
 
-for FILENAME in *.tar.gz; do
-  IMAGE=$(basename "$FILENAME" .tar.gz | base64 -d)
-  echo "Importing image from $FILENAME as $IMAGE..."
-  docker load -i "$FILENAME"
+for FILENAME in *.txt; do
+  IMAGE=$(basename "$FILENAME" .txt | base64 -d)
+  echo "Importing image $IMAGE..."
+  docker pull "localhost:46318/$IMAGE" || echo "ERROR while pulling localhost:46318/$IMAGE"
 done
 
 echo "Finished importing!"

@@ -15,7 +15,7 @@ on:
         required: false
       use-dockerhub:
         type: boolean
-        description: Whether to use dockerhub instead of AWS ECR
+        description: Use dockerhub instead of AWS ECR
         default: true
         required: false
       enable-cache:
