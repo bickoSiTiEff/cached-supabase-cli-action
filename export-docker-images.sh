@@ -3,8 +3,8 @@ set -Eeuo pipefail
 
 EXISTING_IMAGES=$(cat existing-docker-containers.txt)
 
-mkdir -p supabase-cache
-cd supabase-cache
+mkdir -p docker-images-cache
+cd docker-images-cache
 
 IMAGES=$(docker images --format="{{.Repository}}:{{.Tag}}")
 
