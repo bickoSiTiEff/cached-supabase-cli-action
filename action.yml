@@ -79,11 +79,9 @@ runs:
       if: inputs.enable-cache == 'true'
       shell: bash
       working-directory: ${{ runner.temp }}/docker-images-cache
-      env:
-        PORT: ${{ inputs.registry-port }}
       run: |
-        mkdir registry
-        docker run -d -p 46318:5000 --restart=always --name registry -v ./registry:/var/lib/registry registry:2
+        mkdir -p registry
+        docker run -d -p 46318:5000 --restart=always --name registry -v "$PWD/registry:/var/lib/registry" registry:2
         npx wait-on tcp:46318
     - name: Import docker image cache
       if: inputs.enable-cache == 'true' && steps.docker-images-cache.outputs.cache-hit == 'true'
