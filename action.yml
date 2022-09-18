@@ -16,7 +16,8 @@ inputs:
   enable-cache:
     description: Whether to use actions/cache
     required: false
-    default: "true"
+    # Currently slower than just downloading all images every time...
+    default: "false"
 
 runs:
   using: composite
