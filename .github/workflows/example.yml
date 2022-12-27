@@ -13,10 +13,10 @@ on:
         description: Binary architecture
         default: amd64
         required: false
-      use-dockerhub:
-        type: boolean
-        description: Use dockerhub instead of AWS ECR
-        default: true
+      image-registry:
+        type: string
+        description: Image registry
+        default: ghcr.io
         required: false
       enable-binary-cache:
         type: boolean
@@ -39,7 +39,7 @@ jobs:
         with:
           version: ${{ inputs.version }}
           architecture: ${{ inputs.architecture }}
-          use-dockerhub: ${{ inputs.use-dockerhub }}
+          image-registry: ${{ inputs.image-registry }}
           enable-binary-cache: ${{ inputs.enable-binary-cache }}
           enable-docker-cache: ${{ inputs.enable-docker-cache }}
       - name: Initialize new project
