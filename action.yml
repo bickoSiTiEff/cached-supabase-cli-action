@@ -9,10 +9,10 @@ inputs:
     description: Architecture of the binary to download
     required: false
     default: amd64
-  use-dockerhub:
-    description: Use dockerhub for images instead of the default AWS ECR to avoid ratelimiting
+  image-registry:
+    description: Image registry which should be used for downloading the docker images. GitHub container registry is used per default for faster pulls in GH Action CI runs. Specify an empty string to use the CLI default of AWS ECR. Alternatively you can also specify "docker.io".
     required: false
-    default: "true"
+    default: "ghcr.io"
   enable-binary-cache:
     description: Whether to use actions/cache for caching the supabase binary
     required: false
@@ -34,10 +34,11 @@ runs:
       run: docker images --format="{{.Repository}}:{{.Tag}}" > existing-docker-containers.txt
 
     # SETUP ENV VARIABLE
-    - name: Use dockerhub instead of AWS ECR
-      if: inputs.use-dockerhub == 'true'
+    - name: Setting container registry to "${{ inputs.image-registry }}"
       shell: bash
-      run: echo "SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io" >> $GITHUB_ENV
+      env:
+          REGISTRY: ${{ inputs.image-registry }}
+      run: echo "SUPABASE_INTERNAL_IMAGE_REGISTRY=$REGISTRY" >> $GITHUB_ENV
 
     # SETUP SUPABASE BINARY
     - name: Cache Supabase CLI binary
